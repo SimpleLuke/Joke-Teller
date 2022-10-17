@@ -105,15 +105,48 @@ const VoiceRSS = {
   },
 };
 
+// Disable/Enable Button
+const toggleButton = () => {
+  button.disabled = !button.disabled;
+};
+
 const apiKey = "d81b06fb2c274651af83c4b7ee23d262";
 
-VoiceRSS.speech({
-  key: apiKey,
-  src: "Hello, world!",
-  hl: "en-us",
-  v: "Linda",
-  r: 0,
-  c: "mp3",
-  f: "44khz_16bit_stereo",
-  ssml: false,
-});
+const tellMe = (joke) =>
+  VoiceRSS.speech({
+    key: apiKey,
+    src: joke,
+    hl: "en-us",
+    v: "Linda",
+    r: 2,
+    c: "mp3",
+    f: "44khz_16bit_stereo",
+    ssml: false,
+  });
+
+// Get Jokes from Joke API
+const getJokes = async () => {
+  const url =
+    "https://v2.jokeapi.dev/joke/Programming?blacklistFlags=nsfw,religious,political,racist,sexist,explicit";
+  let joke = "";
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.type === "single") {
+      joke = data.joke;
+    } else if (data.type === "twopart") {
+      joke = `${data.setup} ${data.delivery}`;
+    }
+    // Text-to-Speech
+    tellMe(joke);
+    // Disable Button
+    toggleButton();
+  } catch (err) {
+    // Catch Errors
+    console.log("Opps", err);
+  }
+};
+
+// Click button to play a new joke
+button.addEventListener("click", getJokes);
+audioElement.addEventListener("ended", toggleButton);
